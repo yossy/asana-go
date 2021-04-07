@@ -2,7 +2,6 @@ package asana
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -11,11 +10,8 @@ import (
 )
 
 func getTaskURL(c *asana.Client, taskid string) string {
-
 	path := "/tasks/" + taskid
-	url := c.BaseURL.String() + path
-	fmt.Println(url)
-	return url
+	return c.BaseURL.String() + path
 }
 
 func sendRequest(c *asana.Client, url string) *http.Response {
