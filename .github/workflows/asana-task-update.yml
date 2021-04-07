@@ -17,4 +17,4 @@ jobs:
       with:
         repository: yossy/asana-go
     - name: Update asana task
-      run: go run github.com/yossy/asana-go/cmd/asana
+      run: go run github.com/yossy/asana-go/cmd/asana test
