@@ -2,6 +2,7 @@ package asana
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -10,8 +11,11 @@ import (
 )
 
 func getTaskURL(c *asana.Client, taskid string) string {
+
 	path := "/tasks/" + taskid
-	return c.BaseURL.String() + path
+	url := c.BaseURL.String() + path
+	fmt.Println(url)
+	return url
 }
 
 func sendRequest(c *asana.Client, url string) *http.Response {
@@ -64,6 +68,7 @@ func FetchTask(c *asana.Client, taskid string) *asana.Task {
 
 func UpdateTask(c *asana.Client, task *asana.Task, pr string) {
 	// TODO: PRのURLとNotesの内容をaggregateして書き込む
+	// NOTE: もとの説明が削除されて以下に置換される
 	task.TaskBase.Notes = pr
 	updatereq := &asana.UpdateTaskRequest{
 		TaskBase: task.TaskBase,
