@@ -16,5 +16,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: yossy/asana-go
+    - name: build package
+      run: make build
     - name: Update asana task
-      run: go run github.com/yossy/asana-go/cmd/asana
+      run: bin/updatetask -pat pat -pr pr -notes notes
