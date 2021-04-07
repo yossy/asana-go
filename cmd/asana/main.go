@@ -8,15 +8,16 @@ import (
 )
 
 var (
-	pat   string
-	pr    string
-	notes string
+	pat  string
+	pr   string
+	body string
 )
 
 func init() {
-	flag.StringVar(&pat, "pat", "", "your asana personal access token")
-	flag.StringVar(&pr, "pr", "", "URL of the PullRequest to write to the task.")
-	flag.StringVar(&notes, "notes", "", "Sets the contents to be written to the task.")
+	flag.StringVar(&pat, "pat", "", "Your asana personal access token")
+	flag.StringVar(&pr, "pr", "", "URL of the PullRequest to write to the task")
+	// TODO: ここの仕様考える
+	flag.StringVar(&body, "body", "", "Set the body to write the task")
 	flag.Parse()
 }
 
@@ -25,8 +26,8 @@ func main() {
 		log.Fatal("access tokenを設定して下さい。")
 	}
 	c := asana.NewClient(pat)
-	// TODO: notesからTaskのIDを抽出する
-	taskid := notes
+	// TODO: githubのDesciptionからTaskのIDを抽出する
+	taskid := body
 	task := asana.FetchTask(c, taskid)
 	asana.UpdateTask(c, task, pr)
 }
