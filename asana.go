@@ -2,8 +2,9 @@ package asana
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	asana "bitbucket.org/mikehouston/asana-go"
@@ -14,61 +15,72 @@ func getTaskURL(c *asana.Client, taskid string) string {
 	return c.BaseURL.String() + path
 }
 
-func sendRequest(c *asana.Client, url string) *http.Response {
+func sendRequest(c *asana.Client, url string) (*http.Response, error) {
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	res, err := c.HTTPClient.Do(request)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return res
+	return res, nil
 }
 
-func parseResponse(res *http.Response) *asana.Response {
+func parseResponse(res *http.Response) (*asana.Response, error) {
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	// Decode the response
 	value := &asana.Response{}
-	if err := json.Unmarshal(body, value); err != nil {
-		value.Errors = []*asana.Error{{
-			StatusCode: res.StatusCode,
-			Type:       "unknown",
-			Message:    http.StatusText(res.StatusCode),
-		}}
+	json.Unmarshal(body, value)
+
+	switch res.StatusCode {
+	case 200: // OK
+	case 201: // Object created
+	default:
+		return nil, fmt.Errorf("statuscode %d: %s", res.StatusCode, http.StatusText(res.StatusCode))
 	}
+
 	if value.Data == nil {
-		log.Fatal("Taskを取得できませんでした")
+		return nil, errors.New("not found: taskを取得できませんでした。")
 	}
-	return value
+
+	return value, nil
 }
 
-func FetchTask(c *asana.Client, taskid string) *asana.Task {
+func FetchTask(c *asana.Client, taskid string) (*asana.Task, error) {
 	url := getTaskURL(c, taskid)
-	res := sendRequest(c, url)
+	res, err := sendRequest(c, url)
+	if err != nil {
+		return nil, err
+	}
 
-	value := parseResponse(res)
+	value, err := parseResponse(res)
+	if err != nil {
+		return nil, err
+	}
 
 	task := &asana.Task{}
 	if err := json.Unmarshal(value.Data, task); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return task
+	return task, nil
 }
 
-func UpdateTask(c *asana.Client, task *asana.Task, pr string) {
-	// TODO: PRのURLとNotesの内容をaggregateして書き込む
+func UpdateTaskNotes(c *asana.Client, task *asana.Task, pr string) error {
 	// NOTE: もとの説明が削除されて以下に置換される
 	task.TaskBase.Notes = pr
 	updatereq := &asana.UpdateTaskRequest{
 		TaskBase: task.TaskBase,
 	}
 
-	task.Update(c, updatereq)
+	if err := task.Update(c, updatereq); err != nil {
+		return err
+	}
+	return nil
 }

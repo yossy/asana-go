@@ -1,8 +1,10 @@
 package main
 
 import (
+	"errors"
 	"flag"
-	"log"
+	"fmt"
+	"os"
 
 	asana "github.com/yossy/asana-go"
 )
@@ -16,18 +18,37 @@ var (
 func init() {
 	flag.StringVar(&pat, "pat", "", "Your asana personal access token")
 	flag.StringVar(&pr, "pr", "", "URL of the PullRequest to write to the task")
-	// TODO: ここの仕様考える
 	flag.StringVar(&body, "body", "", "Set the body to write the task")
 	flag.Parse()
 }
 
-func main() {
+func run() error {
 	if pat == "" {
-		log.Fatal("access tokenを設定して下さい。")
+		return errors.New("please set your asana personal access token.")
 	}
+	if pr == "" {
+		return errors.New("please set pullrequest url")
+	}
+
 	c := asana.NewClient(pat)
-	// TODO: githubのDesciptionからTaskのIDを抽出する
-	taskid := body
-	task := asana.FetchTask(c, taskid)
-	asana.UpdateTask(c, task, pr)
+	taskid := asana.PickUpTaskID(body)
+	if taskid == "" {
+		return errors.New("[Link Asana Task]の()内に紐付けるAsanaのリンクを入力して下さい。")
+	}
+
+	task, err := asana.FetchTask(c, taskid)
+	if err != nil {
+		return err
+	}
+	if err := asana.UpdateTaskNotes(c, task, pr); err != nil {
+		return err
+	}
+	return nil
+}
+
+func main() {
+	if err := run(); err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+		os.Exit(1)
+	}
 }
