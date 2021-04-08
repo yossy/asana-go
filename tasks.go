@@ -1,6 +1,7 @@
 package asana
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 	"unicode/utf8"
@@ -24,5 +25,6 @@ func PickUpTaskID(body string) (string, error) {
 	count := utf8.RuneCountInString(target)
 	suflen := count - strings.LastIndex(target, "/")
 	extra := count - (suflen + 1)
+	fmt.Println(target[extra:])
 	return target[extra:], nil
 }
