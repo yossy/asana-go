@@ -1,7 +1,6 @@
 package asana
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 	"unicode/utf8"
@@ -24,7 +23,7 @@ func PickUpTaskID(body string) (string, error) {
 	// 後方からtaskのIDまでを抜き取る。
 	count := utf8.RuneCountInString(target)
 	suflen := count - strings.LastIndex(target, "/")
-	extra := count - (suflen + 1)
-	fmt.Println(target[extra:])
+	// "/"が含まれるのでさらに1を引く
+	extra := count - (suflen - 1)
 	return target[extra:], nil
 }
