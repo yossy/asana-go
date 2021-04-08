@@ -31,9 +31,9 @@ func run() error {
 	}
 
 	c := asana.NewClient(pat)
-	taskid := asana.PickUpTaskID(body)
-	if taskid == "" {
-		return errors.New("[Link Asana Task]の()内に紐付けるAsanaのリンクを入力して下さい。")
+	taskid, err := asana.PickUpTaskID(body)
+	if err != nil {
+		return err
 	}
 
 	task, err := asana.FetchTask(c, taskid)
