@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	asana "bitbucket.org/mikehouston/asana-go"
 )
@@ -73,8 +74,12 @@ func FetchTask(c *asana.Client, taskid string) (*asana.Task, error) {
 }
 
 func UpdateTaskNotes(c *asana.Client, task *asana.Task, pr string) error {
-	// NOTE: もとの説明が削除されて以下に置換される
-	task.TaskBase.Notes = pr
+	// すでにPRのリンクがあれば更新しない
+	if strings.Contains(task.TaskBase.Notes, pr) {
+		return nil
+	}
+	// もとの説明は残して最上部にPRのリンクを入れる
+	task.TaskBase.Notes = pr + "\n\n" + task.TaskBase.Notes
 	updatereq := &asana.UpdateTaskRequest{
 		TaskBase: task.TaskBase,
 	}
