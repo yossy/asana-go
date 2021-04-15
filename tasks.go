@@ -4,8 +4,6 @@ import (
 	"regexp"
 	"strings"
 	"unicode/utf8"
-
-	"github.com/pkg/errors"
 )
 
 func PickUpTaskID(body string) (string, error) {
@@ -16,8 +14,9 @@ func PickUpTaskID(body string) (string, error) {
 	target = strings.TrimPrefix(target, "[Link Asana Task](")
 	// タスクのリンクをコピーからだとSuffixがついてるので削除
 	target = strings.TrimSuffix(target, "/f")
+	// Link Asana Taskに入力がない場合は正常終了する。不正な入力の場合のみエラー。
 	if target == "" {
-		return "", errors.New("[Link Asana Task]の()内に紐付けるAsanaのリンクを入力して下さい。")
+		return "", nil
 	}
 
 	// 後方からtaskのIDまでを抜き取る。

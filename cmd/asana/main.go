@@ -32,6 +32,9 @@ func run() error {
 
 	c := asana.NewClient(pat)
 	taskid, err := asana.PickUpTaskID(body)
+	if taskid == "" {
+		return nil
+	}
 	if err != nil {
 		return err
 	}
